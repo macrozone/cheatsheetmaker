@@ -1,0 +1,25 @@
+<head>
+	<script type="text/javascript"
+	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+</head>
+
+<body>
+</body>
+
+
+
+<template name="layout">
+
+	{{> debug}}
+	{{> yield}}
+
+</template>
+
+
+<template name="debug">
+	<div class="debug">
+		<p>lastkey: {{lastKey}}</p>
+	</div>
+</template>
+

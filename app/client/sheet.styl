@@ -1,0 +1,49 @@
+.sheet
+	-webkit-column-count:3; /* Chrome, Safari, Opera */
+	-moz-column-count:3; /* Firefox */
+	column-count:3;
+
+	height: 800px
+	border: 1px dashed black
+	margin: 40px
+	padding: 40px
+
+
+	.editor
+		width: 100%
+		z-index: 100
+		border: 1px dashed
+		box-sizing: border-box
+	.editor-tail
+		height: 50px
+		position: relative
+	.element
+
+		position: relative
+		.editor-element
+			display: none;
+			position: absolute
+			top: 0px
+			left: 0px
+			right: 0px
+			bottom: 0px
+
+	.element.editing
+		.editor-element
+			display: block
+
+.dimmer
+	pointer-events: none
+	z-index: 10
+	position: fixed
+	top: 0px
+	bottom: 0px
+	left: 0px
+	right: 0px
+	background-color: black
+	opacity: 0
+	transition: 0.3s ease-out
+
+body.editing
+	.dimmer
+		opacity: 0.1
