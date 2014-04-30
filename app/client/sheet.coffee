@@ -211,7 +211,7 @@ Template.oneElement.events
 			
 			droppedElement = Elements.findOne _id: dropped_element_id
 			distance = targetElement.position - droppedElement.position
-			console.log distance
+			
 			if distance == 0
 				# do nothing
 			else if distance == 1 or distance == -1
