@@ -68,7 +68,7 @@ saveNewElement = (sheet_id, content, afterElement = null, callback = null) ->
 		else
 			lastPosition = 0
 		
-		Meteor.call "increasePositions", sheet_id, lastPosition, ->
+		Meteor.call "increasePositions", sheet_id, lastPosition, null, ->
 			new_element_id = Elements.insert
 				sheet_id: sheet_id
 				content: content
@@ -207,11 +207,29 @@ Template.oneElement.events
 		dropped_element_id = event.originalEvent?.dataTransfer?.getData 'element_id'
 
 		if dropped_element_id? and dropped_element_id.length > 0
-			# swap positions
+			
 			
 			droppedElement = Elements.findOne _id: dropped_element_id
-			Elements.update {_id: dropped_element_id}, $set: position: targetElement.position
-			Elements.update {_id: target_element_id}, $set: position: droppedElement.position
+			distance = targetElement.position - droppedElement.position
+			console.log distance
+			if distance == 0
+				# do nothing
+			else if distance == 1 or distance == -1
+
+				# swap positions
+				Elements.update {_id: dropped_element_id}, $set: position: targetElement.position
+				Elements.update {_id: target_element_id}, $set: position: droppedElement.position
+			else if distance < -1
+				
+				Meteor.call "increasePositions", targetElement.sheet_id, targetElement.position-1,  droppedElement.position, ->
+					Elements.update {_id: dropped_element_id}, $set: position: targetElement.position
+			else if distance > 1
+				#down
+				
+				Meteor.call "decreasePositions", targetElement.sheet_id, droppedElement.position, targetElement.position+1, ->
+					Elements.update {_id: dropped_element_id}, $set: position: targetElement.position
+				
+
 		else
 			handleFileDrops event, targetElement.sheet_id, targetElement		
 					
