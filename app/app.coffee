@@ -1,7 +1,11 @@
 Router.configure layoutTemplate: 'layout'
-Router.map ->
-	@route 'sheet', path: "/"
+
 
 
 @Sheets = new Meteor.Collection "sheets"
 @Elements = new Meteor.Collection "elements"
+
+
+imageStore = new FS.Store.FileSystem "image", path: "uploads/images" 
+@Images = new FS.Collection "images", stores: [imageStore]
+ 

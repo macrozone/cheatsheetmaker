@@ -1,9 +1,14 @@
+.loading
+	text-align: center
+	img 
+		width: 275px
+
 .sheet
 	-webkit-column-count:3; /* Chrome, Safari, Opera */
 	-moz-column-count:3; /* Firefox */
 	column-count:3;
 
-	height: 800px
+	height: 1200px
 	border: 1px dashed black
 	margin: 40px
 	padding: 40px
@@ -18,17 +23,22 @@
 		height: 50px
 		position: relative
 	.element
-
+		box-sizing: border-box
+		cursor: cell
 		position: relative
+		margin-bottom: 10px
 		.editor-element
+			z-index: 110
 			display: none;
 			position: absolute
 			top: 0px
 			left: 0px
 			right: 0px
 			bottom: 0px
-
+	.element:hover
+		background-color: #fafafa
 	.element.editing
+		min-height: 50px
 		.editor-element
 			display: block
 

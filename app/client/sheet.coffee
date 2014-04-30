@@ -1,55 +1,75 @@
-SHEET_ID = 1
+
 
 
 Meteor.startup ->
+	window.setInterval ->
+		MathJax.Hub.Queue(["Typeset",MathJax.Hub])
+	,1200
 	$(document.body).on "click", ->
 		
 		$("body").removeClass "editing"
 		$(".element").removeClass "editing"
-		lastElement = Elements.findOne sheet_id: SHEET_ID, sort: position: -1
-		Session.set "activeElement", lastElement?._id
-
-Template.debug.lastKey = ->
-	Session.get "lastKey"
+		Session.set "activeElement", null
 
 
 
-saveText = (text, element_id = null) ->
-	if element_id?
-		if text?.length == 0
-			Elements.remove {_id: element_id}
-		else
-			Elements.update {_id: element_id}, $set: content: text
+Router.map ->
+	@route 'sheet',
+		path: "/sheet/:_id",
+		waitOn: ->
+			Meteor.subscribe 'sheets'
+		data: ->
+			{
+				sheet_id: @params._id
+				sheet: Sheets.findOne({_id: @params._id})
+			}
+
+		action: ->
+			if @ready()
+				@render()
+			else
+				@render "loading"
+
+
+Template.sheet.elements = ->
+	
+	Elements.find {sheet_id: @sheet_id}, sort: position: 1
+
+
+updateElement = (element_id, text) ->
+	console.log "update element"
+	if text?.length == 0
+		Elements.remove {_id: element_id}
 	else
-		lastElement = getLastElement()
-		
-		if lastElement?
-			lastPosition = lastElement.position
-		else
-			lastPosition = 0
-		
-		Meteor.call "increasePositions", SHEET_ID, lastPosition, ->
-			Session.set "activeElement", Elements.insert
-				sheet_id: SHEET_ID
-				content: text
-				position: lastPosition+1
-			window.setTimeout ->
-				$(".editor-tail").focus()
-			,100
+		Elements.update {_id: element_id}, $set: content: text
 
+saveNewElement = (sheet_id, text) ->
+	
+	lastElement = getLastElement()
+	
+	if lastElement?
+		lastPosition = lastElement.position
+	else
+		lastPosition = 0
+	
+	Meteor.call "increasePositions", sheet_id, lastPosition, ->
+		Session.set "activeElement", Elements.insert
+			sheet_id: sheet_id
+			content: text
+			position: lastPosition+1
+		window.setTimeout ->
+			$(".editor-tail").focus()
+		,100
 
 	
 getLastElement = ->
 	Elements.findOne _id: Session.get "activeElement"
 
-Template.sheet.elements = ->
-	Elements.find {sheet_id: SHEET_ID}, sort: position: 1
+	
 
 Template.oneElement.rendered = ->
 	MathJax.Hub.Queue(["Typeset",MathJax.Hub])
-Template.oneElement.content = ->
-	MathJax.Hub.Queue(["Typeset",MathJax.Hub])
-	@content
+
 
 Template.oneElement.isActiveElement = ->
 	@_id == Session.get "activeElement"
@@ -78,14 +98,15 @@ hasDoublePressedEnter = (event) ->
 
 Template.sheet.events
 	"blur .editor-tail": (event, template) ->
-		console.log "blur"
+		
 		text = $(event.target).val()
 		if text.length > 0
-			saveText text
+			console.log text
+			saveNewElement template.data.sheet_id, text
 			$(event.target).val ""
 	"keyup .editor-tail": (event, template) ->
 		if hasDoublePressedEnter event
-			saveText $(event.target).val()
+			saveNewElement template.data.sheet_id, $(event.target).val()
 			$(event.target).val ""
 	"click .editor-tail": (event, template) ->
 		$("body").removeClass "editing"
@@ -95,12 +116,12 @@ Template.sheet.events
 Template.oneElement.events
 	"blur .editor-element": (event, template) ->
 		
-		saveText $(event.target).val(), template.data._id
+		updateElement template.data._id, $(event.target).val()
 		template.$(".element").removeClass "editing"
 		$("body").removeClass "editing"
 	"keyup .editor-element": (event, template) ->
 		if hasDoublePressedEnter event
-			saveText $(event.target).val(), template.data._id
+			updateElement template.data._id, $(event.target).val()
 			template.$(".element").removeClass "editing"
 			$("body").removeClass "editing"
 
@@ -119,7 +140,6 @@ Template.oneElement.events
 		event.preventDefault()
 		#console.log event, template
 	"dragstart .element": (event, template) ->
-		console.log event
 		event.originalEvent.dataTransfer.setData '_id', @_id
 
 

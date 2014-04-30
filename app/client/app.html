@@ -2,6 +2,11 @@
 	<script type="text/javascript"
 	src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}
+});
+</script>
 </head>
 
 <body>
@@ -11,7 +16,7 @@
 
 <template name="layout">
 
-	{{> debug}}
+
 	{{> yield}}
 
 </template>
@@ -23,3 +28,11 @@
 	</div>
 </template>
 
+
+
+<template name="loading">
+<div class="loading">
+<img src="/loading.gif" />
+<p>loading</p>
+</div>
+</template>

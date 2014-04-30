@@ -8,7 +8,10 @@ autopublish
 insecure
 coffeescript
 stylus
-bootstrap-3
 showdown
 underscore
 iron-router
+bootstrap-3
+collectionFS
+cfs-filesystem
+ui-dropped-event
