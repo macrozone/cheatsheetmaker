@@ -1,0 +1,17 @@
+<template name="home">
+<div class="jumbotron">
+
+<button class="btn btn-primary btn-lg btn-create-sheet">Create new Sheet</button>
+
+<h2>All Sheets</h2>
+	<ul>
+		{{#each sheets}}
+		<li><a href="{{pathFor 'sheet'}}">{{sheetName}}</a></li>
+		{{/each}}
+	</ul>
+
+	</div>
+
+
+
+</template>

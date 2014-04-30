@@ -1,16 +1,22 @@
 
 
+exitEditMode = ->
+
+	$("body").removeClass "editing"
+	$(".element").removeClass "editing"
+
+	Session.set "activeElement", null
 
 Meteor.startup ->
 	window.setInterval ->
 		MathJax.Hub.Queue(["Typeset",MathJax.Hub])
 	,1200
 	$(document.body).on "click", ->
+		exitEditMode()
 		
-		$("body").removeClass "editing"
-		$(".element").removeClass "editing"
-		Session.set "activeElement", null
-
+	$(document).on "keyup", (event)->
+		if event.which == 27
+			exitEditMode()
 
 
 Router.map ->
@@ -36,35 +42,43 @@ Template.sheet.elements = ->
 	Elements.find {sheet_id: @sheet_id}, sort: position: 1
 
 
-updateElement = (element_id, text) ->
+updateElement = (element_id, content) ->
 	console.log "update element"
-	if text?.length == 0
+	if content?.trim().length == 0
 		Elements.remove {_id: element_id}
 	else
-		Elements.update {_id: element_id}, $set: content: text
+		Elements.update {_id: element_id}, $set: content: content
 
-saveNewElement = (sheet_id, text) ->
+saveNewElement = (sheet_id, content, afterElement = null, callback = null) ->
 	
-	lastElement = getLastElement()
+	unless afterElement?
+		afterElement = getLastElement sheet_id
 	
-	if lastElement?
-		lastPosition = lastElement.position
+	if afterElement?
+		lastPosition = afterElement.position
 	else
 		lastPosition = 0
 	
 	Meteor.call "increasePositions", sheet_id, lastPosition, ->
-		Session.set "activeElement", Elements.insert
+		new_element_id = Elements.insert
 			sheet_id: sheet_id
-			content: text
+			content: content
 			position: lastPosition+1
+		Session.set "activeElement", new_element_id
+		if _.isFunction callback
+			callback null, new_element_id
 		window.setTimeout ->
 			$(".editor-tail").focus()
 		,100
 
-	
-getLastElement = ->
-	Elements.findOne _id: Session.get "activeElement"
 
+	
+getLastElement = (sheet_id)->
+	element = Elements.findOne _id: Session.get "activeElement", sheet_id: sheet_id
+	unless element?
+		# get last
+		element = Elements.findOne {sheet_id: sheet_id}, sort: position: -1
+	element
 	
 
 Template.oneElement.rendered = ->
@@ -94,14 +108,33 @@ hasDoublePressedEnter = (event) ->
 			Session.set "lastKey", event.which
 	return false
 
+escapeRegExp = (str) ->
+  str.replace /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"
 
+
+Template.oneElement.contentProcessed = ->
+	string = @content
+	#regex = new RegExp '\\!(\\[[^]]+\\])?\\(([a-zA-Z0-9]+)\\)', "g"
+	regex = /!(\[[^\]]+\])?\(([a-zA-Z0-9]+)\)/g
+	matches = regex.exec string
+	if matches? 
+		[full, altPart, imageID] = matches
+
+		image = Images.findOne _id: imageID
+		if image?
+			altPart = "[#{image.name()}]" unless altPart?
+			what = new RegExp(escapeRegExp full, "g")
+			replacement = "!#{altPart}(#{image.url()})"
+			string = string.replace what, replacement
+			console.log what, replacement, string
+	string
 
 Template.sheet.events
 	"blur .editor-tail": (event, template) ->
 		
 		text = $(event.target).val()
-		if text.length > 0
-			console.log text
+		if text.trim().length > 0
+
 			saveNewElement template.data.sheet_id, text
 			$(event.target).val ""
 	"keyup .editor-tail": (event, template) ->
@@ -112,6 +145,20 @@ Template.sheet.events
 		$("body").removeClass "editing"
 		$(".element").removeClass "editing"
 		return false
+	"dropped .sheet": (event, template) ->
+		handleFileDrops event, template.data.sheet_id
+
+handleFileDrops = (event, sheet_id, insertFileAfterElement = null) ->
+	# check if file
+	FS.Utility.eachFile event, (file) ->
+		newFile = new FS.File(file)
+		Images.insert newFile, (error, fileObj) ->
+			if error?
+				console.error error
+		
+			content = "![#{fileObj.name()}](#{fileObj._id})"
+			saveNewElement sheet_id, content, insertFileAfterElement
+		
 
 Template.oneElement.events
 	"blur .editor-element": (event, template) ->
@@ -125,21 +172,29 @@ Template.oneElement.events
 			template.$(".element").removeClass "editing"
 			$("body").removeClass "editing"
 
-	"drop .element": (event, template) ->
+	"dropped .element": (event, template) ->
+		target_element_id = template.data._id
+		targetElement = Elements.findOne _id: target_element_id
 		
-		fromID = event.originalEvent.dataTransfer.getData '_id'
-		toID = template.data._id
-		# swap positions
-		element1 = Elements.findOne _id: fromID
-		element2 = Elements.findOne _id: toID
-		Elements.update {_id: fromID}, $set: position: element2.position
-		Elements.update {_id: toID}, $set: position: element1.position
+		dropped_element_id = event.originalEvent?.dataTransfer?.getData 'element_id'
+
+		if dropped_element_id? and dropped_element_id.length > 0
+			# swap positions
+			
+			droppedElement = Elements.findOne _id: dropped_element_id
+			Elements.update {_id: dropped_element_id}, $set: position: targetElement.position
+			Elements.update {_id: target_element_id}, $set: position: droppedElement.position
+		else
+			handleFileDrops event, targetElement.sheet_id, targetElement		
+					
+		
 		
 		return false
 	"dragover .element": (event, template) ->
 		event.preventDefault()
 		#console.log event, template
 	"dragstart .element": (event, template) ->
-		event.originalEvent.dataTransfer.setData '_id', @_id
+		console.log event
+		event.originalEvent.dataTransfer.setData 'element_id', @_id
 
 

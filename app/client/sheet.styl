@@ -19,14 +19,18 @@
 		z-index: 100
 		border: 1px dashed
 		box-sizing: border-box
+		background-color: rgba(255,255,255,0.9)
 	.editor-tail
 		height: 50px
 		position: relative
 	.element
+		
 		box-sizing: border-box
 		cursor: cell
 		position: relative
 		margin-bottom: 10px
+		img
+			max-width: 100%
 		.editor-element
 			z-index: 110
 			display: none;
@@ -39,6 +43,8 @@
 		background-color: #fafafa
 	.element.editing
 		min-height: 50px
+		.content 
+			-webkit-filter: blur(4px);
 		.editor-element
 			display: block
 

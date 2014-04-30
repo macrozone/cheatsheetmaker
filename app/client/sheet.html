@@ -21,9 +21,16 @@
 
 <template name="oneElement">
   <div class="element" id="{{_id}}" draggable="true">
+ 
+  
+
     <textarea class='editor editor-element' >{{content}}</textarea>
-    {{#markdown}}{{content}}{{/markdown}}
+    <div class="content">
+    {{#markdown}}{{contentProcessed}}{{/markdown}}
+    </div>
+      
   </div>
+
 
   {{#if isActiveElement}}
   {{>editorTail}}
