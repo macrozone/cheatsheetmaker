@@ -124,9 +124,8 @@ Template.oneElement.contentProcessed = ->
 		if image?
 			altPart = "[#{image.name()}]" unless altPart?
 			what = new RegExp(escapeRegExp full, "g")
-			replacement = "!#{altPart}(#{image.url()})"
+			replacement = "!#{altPart}(#{escape(image.url())})"
 			string = string.replace what, replacement
-			console.log what, replacement, string
 	string
 
 Template.sheet.events
