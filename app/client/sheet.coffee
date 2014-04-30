@@ -43,33 +43,33 @@ Template.sheet.elements = ->
 
 
 updateElement = (element_id, content) ->
-	console.log "update element"
-	if content?.trim().length == 0
+	
+	if content?.replace(/^\s+|\s+$/g, '').trim().length == 0
 		Elements.remove {_id: element_id}
 	else
 		Elements.update {_id: element_id}, $set: content: content
 
 saveNewElement = (sheet_id, content, afterElement = null, callback = null) ->
-	
-	unless afterElement?
-		afterElement = getLastElement sheet_id
-	
-	if afterElement?
-		lastPosition = afterElement.position
-	else
-		lastPosition = 0
-	
-	Meteor.call "increasePositions", sheet_id, lastPosition, ->
-		new_element_id = Elements.insert
-			sheet_id: sheet_id
-			content: content
-			position: lastPosition+1
-		Session.set "activeElement", new_element_id
-		if _.isFunction callback
-			callback null, new_element_id
-		window.setTimeout ->
-			$(".editor-tail").focus()
-		,100
+	if content.replace(/^\s+|\s+$/g, '').trim().length > 0
+		unless afterElement?
+			afterElement = getLastElement sheet_id
+		
+		if afterElement?
+			lastPosition = afterElement.position
+		else
+			lastPosition = 0
+		
+		Meteor.call "increasePositions", sheet_id, lastPosition, ->
+			new_element_id = Elements.insert
+				sheet_id: sheet_id
+				content: content
+				position: lastPosition+1
+			Session.set "activeElement", new_element_id
+			if _.isFunction callback
+				callback null, new_element_id
+			window.setTimeout ->
+				$(".editor-tail").focus()
+			,100
 
 
 	
@@ -133,7 +133,7 @@ Template.sheet.events
 	"blur .editor-tail": (event, template) ->
 		
 		text = $(event.target).val()
-		if text.trim().length > 0
+		if text.replace(/^\s+|\s+$/g, '').trim().length > 0
 
 			saveNewElement template.data.sheet_id, text
 			$(event.target).val ""
