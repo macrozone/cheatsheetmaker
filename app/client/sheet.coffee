@@ -51,12 +51,13 @@ Template.sheet.elements = ->
 	Elements.find {sheet_id: @sheet_id}, sort: position: 1
 
 
-updateElement = (element_id, content) ->
+updateElement = (element, content) ->
 	
 	if content?.replace(/^\s+|\s+$/g, '').trim().length == 0
-		Elements.remove {_id: element_id}
+		Meteor.call "decreasePositions", element.sheet_id, element.position, null, ->
+			Elements.remove {_id: element._id}
 	else
-		Elements.update {_id: element_id}, $set: content: content
+		Elements.update {_id: element._id}, $set: content: content
 
 saveNewElement = (sheet_id, content, afterElement = null, callback = null) ->
 	if content.replace(/^\s+|\s+$/g, '').trim().length > 0
@@ -191,12 +192,12 @@ handleFileDrops = (event, sheet_id, insertFileAfterElement = null) ->
 Template.oneElement.events
 	"blur .editor-element": (event, template) ->
 		
-		updateElement template.data._id, $(event.target).val()
+		updateElement template.data, $(event.target).val()
 		template.$(".element").removeClass "editing"
 		$("body").removeClass "editing"
 	"keyup .editor-element": (event, template) ->
 		if hasDoublePressedEnter event
-			updateElement template.data._id, $(event.target).val()
+			updateElement template.data, $(event.target).val()
 			template.$(".element").removeClass "editing"
 			$("body").removeClass "editing"
 
