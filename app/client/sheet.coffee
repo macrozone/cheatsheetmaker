@@ -7,10 +7,19 @@ exitEditMode = ->
 
 	Session.set "activeElement", null
 
+processMathJax = ->
+	# little trick to overcome conflicts between mathjax and markdown
+	$(".math code").each (index, element) ->
+		$code = $(element)
+		$code.parent().html $code.html()
+		MathJax.Hub.Queue(["Typeset",MathJax.Hub])
+	
+	
+
 Meteor.startup ->
 	window.setInterval ->
-		MathJax.Hub.Queue(["Typeset",MathJax.Hub])
-	,1200
+		processMathJax()
+	,600
 	$(document.body).on "click", ->
 		exitEditMode()
 		
@@ -82,7 +91,7 @@ getLastElement = (sheet_id)->
 	
 
 Template.oneElement.rendered = ->
-	MathJax.Hub.Queue(["Typeset",MathJax.Hub])
+	processMathJax()
 
 
 Template.oneElement.isActiveElement = ->
@@ -111,10 +120,22 @@ hasDoublePressedEnter = (event) ->
 escapeRegExp = (str) ->
   str.replace /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"
 
+preprocessMath = (string) ->
 
-Template.oneElement.contentProcessed = ->
-	string = @content
-	#regex = new RegExp '\\!(\\[[^]]+\\])?\\(([a-zA-Z0-9]+)\\)', "g"
+	regex = /(\$[^$]+\$)/g
+	string = string.replace regex, "<span class='math'>`$1`</span>"
+preprocessHtmlImages = (string) ->
+	regex = /src=\"([a-zA-Z0-9]+)\"/g
+	matches = regex.exec string
+	if matches? 
+		[full, imageID] = matches
+		image = Images.findOne _id: imageID
+		if image?
+			what = new RegExp(escapeRegExp full, "g")
+			replacement = "src='#{escape(image.url())}'"
+			string = string.replace what, replacement
+	string
+preprocessMarkdownImages = (string) ->
 	regex = /!(\[[^\]]+\])?\(([a-zA-Z0-9]+)\)/g
 	matches = regex.exec string
 	if matches? 
@@ -126,6 +147,14 @@ Template.oneElement.contentProcessed = ->
 			what = new RegExp(escapeRegExp full, "g")
 			replacement = "!#{altPart}(#{escape(image.url())})"
 			string = string.replace what, replacement
+	string
+Template.oneElement.contentProcessed = ->
+	string = @content
+	#regex = new RegExp '\\!(\\[[^]]+\\])?\\(([a-zA-Z0-9]+)\\)', "g"
+	string = preprocessHtmlImages string
+	string = preprocessMarkdownImages string
+	string = preprocessMath string
+
 	string
 
 Template.sheet.events
