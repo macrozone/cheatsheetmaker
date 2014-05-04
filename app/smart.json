@@ -3,6 +3,8 @@
     "iron-router": {},
     "bootstrap-3": {},
     "collectionFS": {},
-    "ui-dropped-event": {}
+    "ui-dropped-event": {
+      "git":"https://github.com/CollectionFS/Meteor-ui-dropped-event.git"},
+    "accounts-ui-bootstrap-3": {}
   }
 }

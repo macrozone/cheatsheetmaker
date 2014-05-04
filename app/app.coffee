@@ -9,3 +9,8 @@ Router.configure layoutTemplate: 'layout'
 imageStore = new FS.Store.FileSystem "image"
 @Images = new FS.Collection "images", stores: [imageStore]
  
+@Images.allow
+  insert: -> true
+  update: -> true
+  remove: -> true
+  download: -> true

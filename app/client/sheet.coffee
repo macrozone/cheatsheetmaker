@@ -33,6 +33,8 @@ Router.map ->
 		path: "/sheet/:_id",
 		waitOn: ->
 			Meteor.subscribe 'sheets'
+			Meteor.subscribe 'elements', @params._id
+			Meteor.subscribe 'images', @params._id
 		data: ->
 			{
 				sheet_id: @params._id
@@ -52,28 +54,15 @@ Template.sheet.elements = ->
 
 
 updateElement = (element, content) ->
-	
-	if content?.replace(/^\s+|\s+$/g, '').trim().length == 0
-		Meteor.call "decreasePositions", element.sheet_id, element.position, null, ->
-			Elements.remove {_id: element._id}
-	else
-		Elements.update {_id: element._id}, $set: content: content
+	Meteor.call "updateElement", element._id, content
 
 saveNewElement = (sheet_id, content, afterElement = null, callback = null) ->
 	if content.replace(/^\s+|\s+$/g, '').trim().length > 0
 		unless afterElement?
-			afterElement = getLastElement sheet_id
+			afterElement = getActiveElement sheet_id
 		
-		if afterElement?
-			lastPosition = afterElement.position
-		else
-			lastPosition = 0
 		
-		Meteor.call "increasePositions", sheet_id, lastPosition, null, ->
-			new_element_id = Elements.insert
-				sheet_id: sheet_id
-				content: content
-				position: lastPosition+1
+		Meteor.call "addElement", sheet_id, content, afterElement?.position, (error, new_element_id)->
 			Session.set "activeElement", new_element_id
 			if _.isFunction callback
 				callback null, new_element_id
@@ -83,12 +72,9 @@ saveNewElement = (sheet_id, content, afterElement = null, callback = null) ->
 
 
 	
-getLastElement = (sheet_id)->
-	element = Elements.findOne _id: Session.get "activeElement", sheet_id: sheet_id
-	unless element?
-		# get last
-		element = Elements.findOne {sheet_id: sheet_id}, sort: position: -1
-	element
+getActiveElement = (sheet_id)->
+	Elements.findOne _id: Session.get "activeElement", sheet_id: sheet_id
+	
 	
 
 Template.oneElement.rendered = ->
@@ -101,12 +87,44 @@ Template.oneElement.isActiveElement = ->
 
 Template.oneElement.events
 	"click .element": (event, template) ->
-		Session.set "activeElement", template.data._id
-		$("body").addClass "editing"
-		$(".element").removeClass "editing"
-		template.$(".element").addClass "editing"
-		template.$(".editor-element").focus()
-		return false
+
+		if ElementTools.userCanEdit Meteor.userId(), template.data.sheet_id
+			Session.set "activeElement", template.data._id
+			$("body").addClass "editing"
+			$(".element").removeClass "editing"
+			template.$(".element").addClass "editing"
+			template.$(".editor-element").focus()
+			return false
+	"blur .editor-element": (event, template) ->
+		if ElementTools.userCanEdit Meteor.userId(), template.data.sheet_id
+			updateElement template.data, $(event.target).val()
+			template.$(".element").removeClass "editing"
+			$("body").removeClass "editing"
+	"keyup .editor-element": (event, template) ->
+		if hasDoublePressedEnter(event) and ElementTools.userCanEdit(Meteor.userId(), template.data.sheet_id)
+			updateElement template.data, $(event.target).val()
+			template.$(".element").removeClass "editing"
+			$("body").removeClass "editing"
+
+	"dropped .element": (event, template) ->
+
+		if ElementTools.userCanEdit Meteor.userId(), template.data.sheet_id
+			target_element_id = template.data._id
+			targetElement = Elements.findOne _id: target_element_id
+
+			dropped_element_id = event.originalEvent?.dataTransfer?.getData 'element_id'
+
+			if dropped_element_id? and dropped_element_id.length > 0
+				Meteor.call "moveElement", dropped_element_id, targetElement.position
+			else
+				handleFileDrops event, targetElement.sheet_id, targetElement		
+			return false
+	"dragover .element": (event, template) ->
+		
+		event.preventDefault()
+		#console.log event, template
+	"dragstart .element": (event, template) ->
+		event.originalEvent.dataTransfer.setData 'element_id', @_id
 
 
 hasDoublePressedEnter = (event) ->
@@ -155,9 +173,13 @@ Template.oneElement.contentProcessed = ->
 	string = preprocessHtmlImages string
 	string = preprocessMarkdownImages string
 	string = preprocessMath string
-
 	string
 
+Template.sheet_author.username = ->
+	Meteor.user()?.profile?.name
+
+Template.sheet_author.year = ->
+	new Date().getFullYear()
 Template.sheet.events
 	"blur .editor-tail": (event, template) ->
 		
@@ -181,67 +203,15 @@ handleFileDrops = (event, sheet_id, insertFileAfterElement = null) ->
 	# check if file
 	FS.Utility.eachFile event, (file) ->
 		newFile = new FS.File(file)
+		newFile.user_id = Meteor.userId()
+		newFile.sheet_id = sheet_id
 		Images.insert newFile, (error, fileObj) ->
 			if error?
 				console.error error
-		
-			content = "![#{fileObj.name()}](#{fileObj._id})"
-			saveNewElement sheet_id, content, insertFileAfterElement
-		
-
-Template.oneElement.events
-	"blur .editor-element": (event, template) ->
-		
-		updateElement template.data, $(event.target).val()
-		template.$(".element").removeClass "editing"
-		$("body").removeClass "editing"
-	"keyup .editor-element": (event, template) ->
-		if hasDoublePressedEnter event
-			updateElement template.data, $(event.target).val()
-			template.$(".element").removeClass "editing"
-			$("body").removeClass "editing"
-
-	"dropped .element": (event, template) ->
-		target_element_id = template.data._id
-		targetElement = Elements.findOne _id: target_element_id
-		
-		dropped_element_id = event.originalEvent?.dataTransfer?.getData 'element_id'
-
-		if dropped_element_id? and dropped_element_id.length > 0
+			else
+				content = "![#{fileObj.name()}](#{fileObj._id})"
+				saveNewElement sheet_id, content, insertFileAfterElement
 			
-			
-			droppedElement = Elements.findOne _id: dropped_element_id
-			distance = targetElement.position - droppedElement.position
-			
-			if distance == 0
-				# do nothing
-			else if distance == 1 or distance == -1
 
-				# swap positions
-				Elements.update {_id: dropped_element_id}, $set: position: targetElement.position
-				Elements.update {_id: target_element_id}, $set: position: droppedElement.position
-			else if distance < -1
-				
-				Meteor.call "increasePositions", targetElement.sheet_id, targetElement.position-1,  droppedElement.position, ->
-					Elements.update {_id: dropped_element_id}, $set: position: targetElement.position
-			else if distance > 1
-				#down
-				
-				Meteor.call "decreasePositions", targetElement.sheet_id, droppedElement.position, targetElement.position+1, ->
-					Elements.update {_id: dropped_element_id}, $set: position: targetElement.position
-				
-
-		else
-			handleFileDrops event, targetElement.sheet_id, targetElement		
-					
-		
-		
-		return false
-	"dragover .element": (event, template) ->
-		event.preventDefault()
-		#console.log event, template
-	"dragstart .element": (event, template) ->
-		console.log event
-		event.originalEvent.dataTransfer.setData 'element_id', @_id
 
 

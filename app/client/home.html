@@ -1,17 +1,32 @@
 <template name="home">
 <div class="jumbotron">
 
+{{#if currentUser}}
 <button class="btn btn-primary btn-lg btn-create-sheet">Create new Sheet</button>
+{{else}}
+<p>please log in to create sheets
+</p>
+{{/if}}
 
 <h2>All Sheets</h2>
 	<ul>
-		{{#each sheets}}
-		<li><a href="{{pathFor 'sheet'}}">{{sheetName}}</a></li>
+		{{#each allSheets}}
+			{{>sheet_listEntry}}
 		{{/each}}
 	</ul>
 
+<h2>your Sheets</h2>
+	<ul>
+		{{#each userSheets}}
+			{{>sheet_listEntry}}
+		{{/each}}
+	</ul>
 	</div>
 
 
 
 </template>
+
+<template name="sheet_listEntry">
+<li><a href="{{pathFor 'sheet'}}">{{#if name}}{{name}}{{else}}{{_id}}{{/if}}</a></li>
+		</template>
