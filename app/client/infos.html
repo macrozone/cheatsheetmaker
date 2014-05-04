@@ -1,6 +1,9 @@
 
 <template name="infos">
 <div class="infos">
+{{> loginButtons }}
+
+<div class="status">
 	{{status.status}}
 {{#if status.connected}}
 
@@ -11,7 +14,7 @@
 	{{/if}}
 
 	
-
+</div>
 
 </div>
 </template>

@@ -4,7 +4,8 @@
     "bootstrap-3": {},
     "collectionFS": {},
     "ui-dropped-event": {
-      "git":"https://github.com/CollectionFS/Meteor-ui-dropped-event.git"},
+      "git": "https://github.com/CollectionFS/Meteor-ui-dropped-event.git"
+    },
     "accounts-ui-bootstrap-3": {}
   }
 }

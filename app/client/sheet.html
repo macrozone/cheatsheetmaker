@@ -2,29 +2,39 @@
 
 
 <template name="sheet">
-  <main class="sheet">
-    {{#each elements}}
-    {{>oneElement}}
-    {{else}}
-    
-    <p>start typing below</p>
-    {{#if userCanEdit sheet._id}}
-      {{>editorTail}}
-    {{/if}}
+  {{>navigation}}
+ {{#if userCanEdit sheet._id}}
+ {{>toolBar}}
+ {{/if}}
+ <main class="sheet">
+  {{#each elements}}
+  {{>oneElement}}
+  {{else}}
 
-    {{/each}}
-     {{#if userCanEdit sheet._id}}
-     {{>sheet_author}}
-     {{/if}}
-    <div class="spacer"></div>
-  </main>
+  <p>start typing below</p>
+  {{#if userCanEdit sheet._id}}
+  {{>editorTail}}
+  {{/if}}
+
+  {{/each}}
+  {{#if userCanEdit sheet._id}}
+  {{>sheet_author}}
+  {{/if}}
+  <div class="spacer"></div>
+</main>
 
 </template>
 
+<template name="navigation">
+<nav class="navigation">
+<a class="btn btn-back" href="/">Home</a>
+</nav>
+</template>
+
 <template name="sheet_author">
-<div class="author">
-© {{username}} - {{year}}
-</div>
+  <div class="author">
+    © {{username}} - {{year}}
+  </div>
 </template>
 <template name="editorTail">
   <textarea class="editor editor-tail"></textarea>
@@ -33,22 +43,24 @@
 <template name="oneElement">
 
   <div class="element" id="{{_id}}" draggable="true">
-     {{#if userCanEdit sheet_id}}
-    <textarea class='editor editor-element' >{{content}}</textarea>
-    {{/if}}
-    <div class="content">
-      {{#markdown}}{{contentProcessed}}{{/markdown}}
-    </div>
-
-
+   {{#if userCanEdit sheet_id}}
+   <textarea class='editor editor-element' >{{content}}</textarea>
+   {{/if}}
+   <div class="content">
+    {{#markdown}}{{contentProcessed}}{{/markdown}}
   </div>
 
 
-  {{#if isActiveElement}}
-   {{#if userCanEdit sheet_id}}
-  {{>editorTail}}
-  {{/if}}
-   {{/if}}
+</div>
+
+
+{{#if isActiveElement}}
+{{#if userCanEdit sheet_id}}
+{{>editorTail}}
+{{/if}}
+{{/if}}
 
 </template>
+
+
 

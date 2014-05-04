@@ -1,28 +1,32 @@
 <template name="home">
+<div class="container">
 <div class="jumbotron">
-
+<h1>The Cheatsheet-Maker!</h1>
 {{#if currentUser}}
 <button class="btn btn-primary btn-lg btn-create-sheet">Create new Sheet</button>
 {{else}}
 <p>please log in to create sheets
 </p>
 {{/if}}
+</div>
 
+<div class="col-sm-6">
 <h2>All Sheets</h2>
 	<ul>
 		{{#each allSheets}}
 			{{>sheet_listEntry}}
 		{{/each}}
 	</ul>
-
-<h2>your Sheets</h2>
+	</div>
+<div class="col-sm-6">
+<h2 >your Sheets</h2>
 	<ul>
 		{{#each userSheets}}
 			{{>sheet_listEntry}}
 		{{/each}}
 	</ul>
 	</div>
-
+</div>
 
 
 </template>

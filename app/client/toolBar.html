@@ -1,0 +1,27 @@
+
+<template name="toolBar">
+	<div class="toolBar">
+		<h1 class="title">Toolbar</h1>
+		<button class="btn btn-danger btn-remove">Delete sheet</button>
+
+		{{>toolBar_images}}
+	</div>
+
+</template>
+
+<template name="toolBar_images">
+<h2>images</h2>
+<ul class="images">
+{{#each images}}
+{{>toolBar_oneImage}}
+{{/each}}
+</ul>
+
+</template>
+
+<template name="toolBar_oneImage">
+<li>
+<img draggable class="image" src="{{url}}" />
+<button class="btn btn-xs btn-danger btn-remove">Delete Image</button>
+</li>
+</template>

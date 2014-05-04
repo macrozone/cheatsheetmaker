@@ -16,8 +16,8 @@ accounts-base
 accounts-google
 accounts-facebook
 accounts-github
-accounts-ui-bootstrap-3
 appcache
 spiderable
 accounts-password
 underscore
+accounts-ui-bootstrap-3

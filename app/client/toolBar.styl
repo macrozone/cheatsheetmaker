@@ -1,0 +1,53 @@
+.toolBar
+	cursor: pointer;
+	color: white;
+	position: fixed
+	left: 0px
+	top: 0px
+	bottom: 0px
+	background-color: rgba(0,0,0,0.5)
+	z-index: 100
+	padding: 8px
+	padding-right: 50px
+	width: 200px
+	box-sizing: border-box
+	text-align: center;
+	transition: 0.3s ease-out 1s
+	-ms-transform: translate(-75%,0px); /* IE 9 */
+	-webkit-transform: translate(-75%,0px); /* Chrome, Safari, Opera */
+	transform: translate(-75%,0px);
+
+	h2
+		font-size: 20px
+
+	.title
+		font-size: 24px
+		position: absolute;
+		top: 40%;
+		right: -20px;
+		-webkit-transform: rotate(-90deg);
+		-moz-transform: rotate(-90deg);
+		-ms-transform: rotate(-90deg);
+		-o-transform: rotate(-90deg);
+		transform: rotate(-90deg);
+
+	.images
+		height: 60%
+		list-style: none;
+		padding: 0px;
+		overflow: scroll
+		li
+			border: 1px dashed
+			padding: 8px
+			img
+				width: 100%
+				display: block;
+				padding-bottom: 8px
+			margin-bottom: 16px
+
+.toolBar:hover
+	opacity: 1
+	transition: 0.3s ease-out 0s
+	-ms-transform: translate(0px,0px); /* IE 9 */
+	-webkit-transform: translate(0px,0px); /* Chrome, Safari, Opera */
+	transform: translate(0px,0px);

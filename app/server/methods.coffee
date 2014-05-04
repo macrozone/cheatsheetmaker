@@ -36,7 +36,8 @@ Meteor.methods
 
 	removeSheet: (sheet_id) ->
 		# user has to match
-		sheet = Sheets.find _id: sheet_id, user_id: @userId
+		sheet = Sheets.findOne _id: sheet_id, user_id: @userId
+		
 		if sheet?
 			Elements.remove sheet_id: sheet_id
 			Images.remove sheet_id: sheet_id

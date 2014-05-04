@@ -113,9 +113,13 @@ Template.oneElement.events
 			targetElement = Elements.findOne _id: target_element_id
 
 			dropped_element_id = event.originalEvent?.dataTransfer?.getData 'element_id'
-
+			dropped_image_id = event.originalEvent?.dataTransfer?.getData 'image_id'
 			if dropped_element_id? and dropped_element_id.length > 0
 				Meteor.call "moveElement", dropped_element_id, targetElement.position
+			else if dropped_image_id? and dropped_image_id.length > 0
+				image = Images.findOne _id: dropped_image_id
+				if image?
+					addElementWithImage targetElement.sheet_id, image, targetElement
 			else
 				handleFileDrops event, targetElement.sheet_id, targetElement		
 			return false
@@ -197,7 +201,18 @@ Template.sheet.events
 		$(".element").removeClass "editing"
 		return false
 	"dropped .sheet": (event, template) ->
-		handleFileDrops event, template.data.sheet_id
+		dropped_image_id = event.originalEvent?.dataTransfer?.getData 'image_id'
+		if dropped_image_id? and dropped_image_id.length > 0
+			image = Images.findOne _id: dropped_image_id
+			if image?
+				addElementWithImage template.data.sheet_id, image
+		else
+				
+			handleFileDrops event, template.data.sheet_id
+
+addElementWithImage = (sheet_id, fileObj, insertFileAfterElement = null)->
+	content = "![#{fileObj.name()}](#{fileObj._id})"
+	saveNewElement sheet_id, content, insertFileAfterElement
 
 handleFileDrops = (event, sheet_id, insertFileAfterElement = null) ->
 	# check if file
@@ -209,8 +224,8 @@ handleFileDrops = (event, sheet_id, insertFileAfterElement = null) ->
 			if error?
 				console.error error
 			else
-				content = "![#{fileObj.name()}](#{fileObj._id})"
-				saveNewElement sheet_id, content, insertFileAfterElement
+				addElementWithImage sheet_id, fileObj, insertFileAfterElement
+				
 			
 
 
