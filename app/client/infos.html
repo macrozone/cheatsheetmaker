@@ -1,0 +1,17 @@
+
+<template name="infos">
+<div class="infos">
+	{{status.status}}
+{{#if status.connected}}
+
+{{else}}
+
+	({{status.retryCount}}) - {{status.reason}}
+	<button class="btn-reconnect btn btn-warning btn-xs">reconnect now</button>
+	{{/if}}
+
+	
+
+
+</div>
+</template>
