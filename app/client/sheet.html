@@ -6,7 +6,8 @@
  {{#if userCanEdit sheet._id}}
  {{>toolBar}}
  {{/if}}
- <main class="sheet">
+ <div class="sheet">
+ <div class="inner">
   {{#each elements}}
   {{>oneElement}}
   {{else}}
@@ -21,7 +22,8 @@
   {{>sheet_author}}
   {{/if}}
   <div class="spacer"></div>
-</main>
+  </div>
+</div>
 
 </template>
 
