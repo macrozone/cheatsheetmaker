@@ -3,13 +3,17 @@
 	<div class="toolBar">
 		<h1 class="title">Toolbar</h1>
 		<button class="btn btn-danger btn-remove">Delete sheet</button>
-
+		{{>toolBar_settings}}
 		{{>toolBar_images}}
 	</div>
 
 </template>
-
+<template name="toolBar_settings">
+<h2>Settings</h2>
+<input type="checkbox" class="public-writable" checked="{{sheet.public_writable}}" /> Public writable (DANGER !! everyone can edit AND delete!)
+</template>
 <template name="toolBar_images">
+
 <h2>images</h2>
 <ul class="images">
 {{#each images}}

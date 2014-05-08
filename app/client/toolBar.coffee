@@ -9,6 +9,11 @@ Template.toolBar.events
 Template.toolBar_images.images = ->
 	Images.find sheet_id: @sheet._id
 
+Template.toolBar_settings.events 
+	"change .public-writable": (event, template) ->
+		public_writable = $(event.target).is ":checked"
+		Meteor.call "setPublicWritable", template.data.sheet_id, public_writable
+
 Template.toolBar_oneImage.events
 	"dragstart img": (event, template) ->
 		event.originalEvent.dataTransfer.setData 'image_id', @_id

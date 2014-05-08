@@ -3,34 +3,34 @@
 
 <template name="sheet">
   {{>navigation}}
- {{#if userCanEdit sheet._id}}
- {{>toolBar}}
- {{/if}}
- <div class="sheetContainer">
- <div class="sheet">
-  {{#each elements}}
-  {{>oneElement}}
-  {{else}}
-
-  <p>start typing below</p>
   {{#if userCanEdit sheet._id}}
-  {{>editorTail}}
+  {{>toolBar}}
   {{/if}}
+  <div class="sheetContainer">
+   <div class="sheet">
+    {{#each elements}}
+    {{>oneElement}}
+    {{else}}
 
-  {{/each}}
-  {{#if userCanEdit sheet._id}}
-  {{>sheet_author}}
-  {{/if}}
-  <div class="spacer"></div>
+    <p>start typing below</p>
+    {{#if userCanEdit sheet._id}}
+    {{>editorTail}}
+    {{/if}}
+
+    {{/each}}
+    {{#if userCanEdit sheet._id}}
+    {{>sheet_author}}
+    {{/if}}
+    <div class="spacer"></div>
   </div>
 </div>
 
 </template>
 
 <template name="navigation">
-<nav class="navigation">
-<a class="btn btn-back" href="/">Home</a>
-</nav>
+  <nav class="navigation">
+    <a class="btn btn-back" href="/">Home</a>
+  </nav>
 </template>
 
 <template name="sheet_author">

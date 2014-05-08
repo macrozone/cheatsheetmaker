@@ -42,6 +42,9 @@ Meteor.methods
 			Elements.remove sheet_id: sheet_id
 			Images.remove sheet_id: sheet_id
 			Sheets.remove _id: sheet_id
+	setPublicWritable: (sheet_id, writable) ->
+		if ElementTools.userCanEdit @userId, sheet_id
+			Sheets.update {_id: sheet_id}, $set: public_writable: writable
 
 	moveElement: (element_id, toPosition) ->
 
